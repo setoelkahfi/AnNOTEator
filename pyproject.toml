@@ -1,0 +1,16 @@
+[project]
+name = "annoteator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "librosa>=0.11.0",
+    "music21>=9.9.1",
+    "numpy==1.26.4",
+    "pandas==1.4.3",
+    "pedalboard==0.8.2",
+    "pytube==12.1.0",
+    "scikit-learn>=1.7.2",
+    "tensorflow>=2.18.1",
+]

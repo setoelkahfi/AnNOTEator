@@ -134,3 +134,6 @@ docker/song_midi/
 docker/test/
 docker/*.webm
 MuseScore*
+
+# Editor
+.zed

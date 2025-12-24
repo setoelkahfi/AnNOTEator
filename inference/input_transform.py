@@ -8,14 +8,14 @@ from pedalboard import Pedalboard, Compressor
 
 def drum_extraction(path, dir=None, kernel='demucs', mode='performance', drum_start=None, drum_end=None):
     """
-    This is a function to transform the input audio file into a ready-dataframe for prediction task  
+    This is a function to transform the input audio file into a ready-dataframe for prediction task
     :param path (str):                  the path to the audio file
     :param dir(str):                    the path to the demucs model directory
-    :param kernel (str):                'spleeter' or 'demucs'. spleeter run faster but lower quality, demucs run slower but higher quality. Always recommend to use demucs as it produce a much better quality. 
+    :param kernel (str):                'spleeter' or 'demucs'. spleeter run faster but lower quality, demucs run slower but higher quality. Always recommend to use demucs as it produce a much better quality.
                                         Please note that the demucs kernel could take 4-6 mins to process a song depends on the capability of your machine and the length of the audio
     :param mode (str):                  only applicable when demucs kernel is used. Accept either 'speed' or 'performance', default 'performance.
                                         demucs is a bad of 4 models, speed mode will only use 1 of the 4 models, performance mode will use all 4 modesls
-                                        As a result, speed mode will run 4x faster, but quality could be worse. Performance mode will ensure the best quality but much slower.  
+                                        As a result, speed mode will run 4x faster, but quality could be worse. Performance mode will ensure the best quality but much slower.
     :param drum_start (int):            the start of the music in the file (in seconds). Shorter audio will reduce the processing time significantly. If not set, assume to start at the begining of the track
     :param drum_end (int):              the end of the music in the file (in seconds). Shorter audio will reduce the processing time significantly. If not set, assume to end at the end of the track
 
@@ -32,12 +32,12 @@ def drum_extraction(path, dir=None, kernel='demucs', mode='performance', drum_st
     if kernel=='spleeter':
         from spleeter.audio.adapter import AudioAdapter
         from spleeter.separator import Separator
-        #default to use 4stems pre-train model from the Spleeter package for audio demixing 
+        #default to use 4stems pre-train model from the Spleeter package for audio demixing
         separator = Separator('spleeter:4stems')
 
         audio_adapter = AudioAdapter.default()
-        #extract sampling rate from the audio file using the librosa package 
-        
+        #extract sampling rate from the audio file using the librosa package
+
         y, sr=librosa.load(
             path,
             offset=drum_start if drum_start is not None else 0,
@@ -53,7 +53,7 @@ def drum_extraction(path, dir=None, kernel='demucs', mode='performance', drum_st
             duration=drum_end-drum_start if drum_end is not None else None,
             sample_rate=sample_rate
             )
-        
+
         prediction = separator.separate(waveform)
 
         #use librosa onset_detection algorithm to extract drum hit
@@ -96,7 +96,7 @@ def drum_extraction(path, dir=None, kernel='demucs', mode='performance', drum_st
             progress=True,
             num_workers=multiprocessing.cpu_count()
             )[0]
-        
+
         sources = sources * ref.std() + ref.mean()
         drum=sources[0]
         sample_rate=model.samplerate
@@ -110,7 +110,7 @@ def drum_extraction(path, dir=None, kernel='demucs', mode='performance', drum_st
 def drum_to_frame(drum_track, sample_rate, estimated_bpm=None, resolution=16, fixed_clip_length=False, hop_length=1024, backtrack=False):
 
     """
-    This is a function to detect and extract onset from a drum track and format the onsets into a df for prediction task 
+    This is a function to detect and extract onset from a drum track and format the onsets into a df for prediction task
     :param drum_track (numpy array):    The extracted drum track
     :param sample_rate (int):           The sampling rate of the drum track
     :param estimated_bpm (int):         Beat per minute. it is best to provide a estimated bpm to improve the bpm detection accuracy
@@ -123,7 +123,7 @@ def drum_to_frame(drum_track, sample_rate, estimated_bpm=None, resolution=16, fi
     :return bpm (float):                the estimated bpm value
     """
 
-    if fixed_clip_length==False:      
+    if fixed_clip_length==False:
         if estimated_bpm==None:
             print('-----------------------------')
             print('BPM value not set......BPM will be estimated by the time difference between each detected drum hit, which may not be reliable in some cases.')
@@ -148,7 +148,7 @@ def drum_to_frame(drum_track, sample_rate, estimated_bpm=None, resolution=16, fi
         else:
             raise ValueError ('Resolution parameter is not set properly. The value should be either note duration (by setting it between 4/8/16/32) or second (only accept the value <1 second). Please set to None if not familiar with the song structure')
 
-    
+
     if type(drum_track)!=np.ndarray:
         drum_track, sample_rate=librosa.load(drum_track, sr=None)
 
@@ -157,7 +157,7 @@ def drum_to_frame(drum_track, sample_rate, estimated_bpm=None, resolution=16, fi
     peak_frames=librosa.onset.onset_detect(drum_track, onset_envelope=o_env, sr=sample_rate)
     onset_samples = librosa.frames_to_samples(onset_frames*(hop_length/512))
     peak_samples = librosa.frames_to_samples(peak_frames*(hop_length/512))
-    
+
     #calculate note duration for 4,8,16,32 note with respect to the bpm of the song
     if estimated_bpm != None:
         pass
@@ -175,18 +175,18 @@ def drum_to_frame(drum_track, sample_rate, estimated_bpm=None, resolution=16, fi
         peak_frames=librosa.onset.onset_detect(drum_track, onset_envelope=o_env, sr=sample_rate)
         onset_samples = librosa.frames_to_samples(onset_frames*(hop_length/512))
         peak_samples = librosa.frames_to_samples(peak_frames*(hop_length/512))
-        
+
     q_note_duration=60/bpm
     eigth_note_duration=60/bpm/2
     sixteenth_note_duration=60/bpm/4
     thirty_second_note_duration=60/bpm/8
-    
+
     if backtrack==False:
         padding=librosa.time_to_samples(thirty_second_note_duration/2/2, sr=sample_rate)
 #        padding=librosa.time_to_samples(0.02, sr=sample_rate)
     else:
         pass
-    
+
     if resolution==None:
         window_size=int(pd.Series(onset_samples).diff().quantile(q=0.1))
     elif resolution==4:
@@ -200,7 +200,7 @@ def drum_to_frame(drum_track, sample_rate, estimated_bpm=None, resolution=16, fi
     elif resolution<1:
         window_size=librosa.time_to_samples(resolution, sr=sample_rate)
 
-    
+
     if fixed_clip_length==True:
         window_size=librosa.time_to_samples(0.18, sr=sample_rate)
     # create df for prediction task

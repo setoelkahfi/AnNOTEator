@@ -9,12 +9,12 @@ def main():
     input.add_argument('-l', '--link',
                         type=str,
                         help='Youtube video link')
-    
+
     input.add_argument('-p', '--path',
                         type=str,
                         help='Path to local audio file')
 
-      
+
     parser.add_argument('-k', '--kernal',
                         default='demucs',
                         choices=['spleeter', 'demucs'],
@@ -42,11 +42,11 @@ def main():
                         type=int,
                         default=4,
                         help='Number of beats in each measure')
-        
+
     parser.add_argument('-n', '--note',
                         type=int,
                         default=4,
-                        help="The UPPER NUMBER of the song's time signature." 
+                        help="The UPPER NUMBER of the song's time signature."
                                 "This number represent the number of beats in each measure.")
 
     parser.add_argument('-fmt', '--format',
@@ -54,7 +54,7 @@ def main():
                         choices=['pdf', 'musicxml'],
                         type=str,
                         help='Output sheet music format')
-    
+
     parser.add_argument('-o', '--outpath',
                         default='',
                         type=str,
@@ -80,7 +80,7 @@ def main():
     else:
         f_path=args.path
         print(f'Retriving audio track from {args.path}')
-    
+
     print('Start Demixing Process...')
     drum_track, sample_rate = drum_extraction(f_path,
                                               kernel=args.kernal,
@@ -107,7 +107,7 @@ def main():
                                     beats_in_measure=args.beat,
                                     note_value=args.note,
                                     song_title=args.outputfile_name)
-    
+
     if args.format=='pdf':
         out_path=sheet_music.sheet.write(fmt='musicxml.pdf', fp=os.path.join(args.outpath, args.outputfile_name))
         print(f'Sheet music saved at {out_path}')
