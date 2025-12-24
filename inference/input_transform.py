@@ -64,7 +64,7 @@ def drum_extraction(path, dir=None, kernel='demucs', mode='performance', drum_st
         if dir!=None:
             dir_path=dir
         else:
-            dir_path='inference\pretrained_models\demucs'
+            dir_path='inference/pretrained_models/demucs'
         if mode =='speed':
             model=pretrained.get_model(name='83fc094f', repo=Path(dir_path))
             model=apply.BagOfModels([model])
