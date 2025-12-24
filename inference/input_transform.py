@@ -1,6 +1,6 @@
 import librosa
 import pandas as pd
-from pytube import YouTube
+from pytubefix import YouTube
 import numpy as np
 from pathlib import Path
 import multiprocessing
